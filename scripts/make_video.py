@@ -30,8 +30,8 @@ def ffprobe_duration_seconds(path: str) -> float:
     out = subprocess.check_output(cmd, text=True).strip()
     return float(out)
 
-def run(cmd):
-    subprocess.check_call(cmd)
+def run(cmd, cwd=None):
+    subprocess.check_call(cmd, cwd=cwd)
 
 def main():
     ap = argparse.ArgumentParser()
@@ -128,20 +128,20 @@ def main():
 
     print(f"\nConcat file content:\n{concat_txt.read_text()}")
 
-    out_mp4 = str(out_dir / "final.mp4")
+    out_mp4 = out_dir / "final.mp4"
     print(f"\nRunning ffmpeg to create {out_mp4}...")
     
     # 从 out_dir 目录执行 ffmpeg（这样相对路径才正确）
     run([
         "ffmpeg", "-y",
         "-f", "concat", "-safe", "0",
-        "-i", str(concat_txt.name),  # 只传文件名（在 cwd 下）
-        "-i", str((out_dir / "narration.mp3").name),
+        "-i", "images.txt",
+        "-i", "narration.mp3",
         "-r", str(fps),
         "-pix_fmt", "yuv420p",
         "-shortest",
-        str((out_dir / "final.mp4").name)
-    ])
+        "final.mp4"
+    ], cwd=str(out_dir))
 
     print(f"\nDone! Output: {out_mp4}")
 
