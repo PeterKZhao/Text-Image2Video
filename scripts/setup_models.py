@@ -10,10 +10,11 @@ def main():
     ckpt_dir = os.path.join(args.comfy_dir, "models", "checkpoints")
     os.makedirs(ckpt_dir, exist_ok=True)
 
-    # SDXL base 1.0（需要你 HF 账号已同意模型协议；用 Actions Secret: HF_TOKEN）
-    repo_id = "stabilityai/stable-diffusion-xl-base-1.0"
-    filename = "sd_xl_base_1.0.safetensors"
+    # 改用 SD 1.5（4GB 模型，比 SDXL 快 5-8 倍）
+    repo_id = "runwayml/stable-diffusion-v1-5"
+    filename = "v1-5-pruned-emaonly.safetensors"
 
+    print(f"Downloading {repo_id}/{filename}...")
     path = hf_hub_download(
         repo_id=repo_id,
         filename=filename,
@@ -21,7 +22,7 @@ def main():
         local_dir_use_symlinks=False
     )
 
-    print(f"Downloaded: {path}")
+    print(f"Downloaded to: {path}")
 
 if __name__ == "__main__":
     main()
