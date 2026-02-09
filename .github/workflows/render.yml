@@ -66,6 +66,15 @@ jobs:
             > comfyui.log 2>&1 &
           python scripts/wait_http.py --url http://127.0.0.1:8188/system_stats --timeout 180
 
+      - name: Verify ComfyUI is ready
+        run: |
+          echo "Testing /system_stats endpoint..."
+          curl -f http://127.0.0.1:8188/system_stats || {
+            echo "ComfyUI not responding! Log:"
+            cat comfyui.log
+            exit 1
+          }
+
       - name: Generate images + render video
         run: |
           python scripts/make_video.py \
