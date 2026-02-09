@@ -95,7 +95,7 @@ def main():
             wf["7"]["inputs"]["filename_prefix"] = f"p{pi:02d}_i{idx:03d}"
 
             prompt_id = client.queue_prompt(wf)
-            hist = client.wait_history(prompt_id, timeout=1800)
+            hist = client.wait_history(prompt_id, timeout=3600)
             imgs = extract_images_from_history(hist)
             if not imgs:
                 raise RuntimeError(f"No images returned for prompt_id={prompt_id}")
