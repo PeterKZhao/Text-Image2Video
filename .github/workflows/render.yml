@@ -1,1 +1,82 @@
+name: Render video (ComfyUI)
 
+on:
+  push:
+    paths:
+      - "input/**"
+      - "config/**"
+      - "comfy/**"
+      - "scripts/**"
+      - ".github/workflows/render-comfyui.yml"
+  workflow_dispatch: {}
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup FFmpeg
+        uses: AnimMouse/setup-ffmpeg@v1
+
+      - name: System deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git curl jq libgl1 libglib2.0-0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install orchestration deps
+        run: |
+          pip install -U pip
+          pip install pyyaml requests edge-tts huggingface_hub
+
+      - name: Clone ComfyUI
+        run: |
+          git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git
+
+      # CPU 版本 torch（能跑但很慢）；如果你使用 GPU runner，请把这里改成 cu121/cu124 等
+      - name: Install torch (CPU)
+        run: |
+          pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision torchaudio
+
+      - name: Install ComfyUI requirements
+        run: |
+          pip install -r ComfyUI/requirements.txt
+
+      - name: Download SDXL checkpoint (to ComfyUI/models/checkpoints)
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python scripts/setup_models.py --comfy_dir ComfyUI
+
+      - name: Start ComfyUI server (background)
+        run: |
+          nohup python ComfyUI/main.py \
+            --listen 127.0.0.1 \
+            --port 8188 \
+            --disable-auto-launch \
+            --cpu \
+            > comfyui.log 2>&1 &
+          python scripts/wait_http.py --url http://127.0.0.1:8188/system_stats --timeout 180
+
+      - name: Generate images + render video
+        run: |
+          python scripts/make_video.py \
+            --script input/script.txt \
+            --config config/video.yml \
+            --workflow comfy/workflow_sdxl_txt2img.json \
+            --comfy http://127.0.0.1:8188 \
+            --out out
+
+      - name: Upload output
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-output
+          path: out/**
