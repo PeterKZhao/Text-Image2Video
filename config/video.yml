@@ -1,13 +1,7 @@
-width: 1280
-height: 720
+width: 512           # SD 1.5 原生分辨率（改回 1280 会更慢）
+height: 512
 fps: 30
-
-# 每个段落生成几张图（总图数 = 段落数 * images_per_paragraph）
-images_per_paragraph: 2
-
-# 文生图风格（会拼到每段 prompt 后面）
-style_prompt: "cinematic, soft light, high detail, cohesive color grading"
-
-# 负面提示词
+images_per_paragraph: 1   # 先改成 1 张/段，测试通过后再增加
+style_prompt: "cinematic, soft light, high detail, professional photography"
 negative_prompt: "low quality, blurry, deformed, bad anatomy, text, watermark, logo"
 tts_voice: "zh-CN-XiaoxiaoNeural"
