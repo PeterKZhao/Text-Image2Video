@@ -75,6 +75,12 @@ jobs:
             --comfy http://127.0.0.1:8188 \
             --out out
 
+      - name: Show ComfyUI log on failure
+        if: failure()
+        run: |
+          echo "=== ComfyUI Log (last 200 lines) ==="
+          tail -n 200 comfyui.log || echo "No log file"
+
       - name: Upload output
         uses: actions/upload-artifact@v4
         with:
